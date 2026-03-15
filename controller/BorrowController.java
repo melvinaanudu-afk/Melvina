@@ -1,7 +1,6 @@
 package controller;
 
 import model.*;
-import javax.swing.JOptionPane;
 
 public class BorrowController {
     private LibraryManager manager;
@@ -10,16 +9,12 @@ public class BorrowController {
         this.manager = manager;
     }
 
-    /**
-     * Requirement 7: Event-Driven Logic
-     * Processes borrowing and saves state to file.
-     */
     public boolean processBorrow(String itemId, String userId) {
         if (itemId.isEmpty() || userId.isEmpty()) return false;
 
         boolean success = manager.borrowItem(itemId, userId);
         if (success) {
-            // Requirement 10: Persistence (Save after every major change)
+            manager.logTransaction("BORROW", itemId, userId);
             FileHandler.saveData(manager.getInventory());
         }
         return success;
@@ -30,6 +25,7 @@ public class BorrowController {
 
         boolean success = manager.returnItem(itemId);
         if (success) {
+            manager.logTransaction("RETURN", itemId, "System/Admin");
             FileHandler.saveData(manager.getInventory());
         }
         return success;

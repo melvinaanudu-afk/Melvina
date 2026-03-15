@@ -3,17 +3,19 @@ package controller;
 import model.*;
 import java.util.*;
 import java.io.*;
+import java.text.SimpleDateFormat;
 
 public class LibraryManager {
-    // Requirements 3.1 - 3.4
+   
     private List<LibraryItem> inventory = new ArrayList<>();
     private List<User> users = new ArrayList<>();
+    private List<String> transactionHistory = new ArrayList<>(); 
     private Map<String, Queue<String>> reservations = new HashMap<>(); 
     private Stack<String> undoStack = new Stack<>(); 
     private LibraryItem[] mostFrequentCache = new LibraryItem[5]; 
 
     public LibraryManager() {
-        // Sample Data for testing
+       
         inventory.add(new Book("B001", "Java Programming", "Deitel", 2024, "Education"));
         inventory.add(new Book("B002", "Data Structures", "Weiss", 2023, "Tech"));
         inventory.add(new Book("B003", "Algorithms", "Sedgewick", 2022, "Tech"));
@@ -23,7 +25,6 @@ public class LibraryManager {
         inventory.add(new Journal("J002", "Quantum Computing", "Quantum Labs", 2023, "Science"));
     }
 
-    // --- Search Algorithms (Requirement 4 & 6) ---
 
     public LibraryItem performSearch(String query, String method) {
         if (query == null || query.isEmpty()) return null;
@@ -34,11 +35,10 @@ public class LibraryManager {
                 result = recursiveSearchByTitle(inventory, query, 0);
                 break;
             case "Binary Search":
-                // Must sort before binary search
                 sortInventory("Title", "QuickSort");
                 result = binarySearchByTitle(inventory, query);
                 break;
-            default: // Linear
+            default: 
                 result = inventory.stream()
                         .filter(i -> i.getTitle().equalsIgnoreCase(query))
                         .findFirst().orElse(null);
@@ -65,25 +65,19 @@ public class LibraryManager {
         return null;
     }
 
-    // --- Sorting Algorithms (Requirement 5) ---
 
-    public void sortInventory(String criteria, String algorithm) {
-        if (algorithm.equals("QuickSort")) {
-            quickSort(inventory, 0, inventory.size() - 1, criteria);
-        } else {
-            // Fallback to standard sort for simplicity in SelectionSort example
-            inventory.sort((a, b) -> a.getTitle().compareToIgnoreCase(b.getTitle()));
-        }
-    }
-
-    private void quickSort(List<LibraryItem> items, int low, int high, String criteria) {
+    public void quickSort(List<LibraryItem> items, int low, int high, String criteria) {
         if (low < high) {
             int pi = partition(items, low, high, criteria);
             quickSort(items, low, pi - 1, criteria);
             quickSort(items, pi + 1, high, criteria);
         }
     }
-
+public void addUser(String name, String email, String role) {
+    String id = "U" + (users.size() + 101);
+    users.add(new User(id, name, email, role)); // Passing role here
+    undoStack.push("ADD_USER:" + id);
+}
     private int partition(List<LibraryItem> items, int low, int high, String criteria) {
         LibraryItem pivot = items.get(high);
         int i = (low - 1);
@@ -97,7 +91,20 @@ public class LibraryManager {
         return i + 1;
     }
 
-    // --- Transactions & Undo (Requirement 3.2, 3.3) ---
+    public void sortInventory(String criteria, String algorithm) {
+        if (algorithm.equals("QuickSort")) {
+            quickSort(inventory, 0, inventory.size() - 1, criteria);
+        } else {
+            inventory.sort((a, b) -> a.getTitle().compareToIgnoreCase(b.getTitle()));
+        }
+    }
+
+
+    public void logTransaction(String action, String itemId, String userId) {
+        String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+        String message = String.format("[%s] %s - Item: %s | User: %s", timestamp, action, itemId, userId);
+        transactionHistory.add(message);
+    }
 
     public boolean borrowItem(String itemId, String userId) {
         LibraryItem item = findItemById(itemId);
@@ -105,6 +112,7 @@ public class LibraryManager {
             item.setStatus("Borrowed");
             item.setBorrowedBy(userId);
             undoStack.push("BORROW:" + itemId);
+            logTransaction("BORROW", itemId, userId);
             return true;
         } else if (item != null) {
             reservations.computeIfAbsent(itemId, k -> new LinkedList<>()).add(userId);
@@ -117,12 +125,31 @@ public class LibraryManager {
         if (item != null) {
             item.setStatus("Available");
             item.setBorrowedBy("None");
+            logTransaction("RETURN", itemId, "System");
+            
             if (reservations.containsKey(itemId) && !reservations.get(itemId).isEmpty()) {
                 System.out.println("Reserved user notified: " + reservations.get(itemId).poll());
             }
+            return true;
         }
         return false;
     }
+
+    public String generateReport() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("--- MIVA LIBRARY STATUS REPORT ---\n");
+        sb.append("Total Items: ").append(inventory.size()).append("\n");
+        sb.append("Total Users: ").append(users.size()).append("\n\n");
+        sb.append("--- RECENT ACTIVITY ---\n");
+        sb.append(getFullHistory());
+        return sb.toString();
+    }
+
+    public String getFullHistory() {
+        if (transactionHistory.isEmpty()) return "No transactions recorded.";
+        return String.join("\n", transactionHistory);
+    }
+
 
     public void undoLastAction() {
         if (undoStack.isEmpty()) return;
@@ -131,22 +158,11 @@ public class LibraryManager {
         else if (parts[0].equals("ADD_USER")) users.remove(users.size() - 1);
     }
 
-    // --- Helpers ---
-    public void addUser(String name, String email) {
-        String id = "U" + (users.size() + 101);
-        users.add(new User(id, name, email));
-        undoStack.push("ADD_USER:" + id);
-    }
-
     private void updateCache(LibraryItem item) {
         for (int i = 4; i > 0; i--) mostFrequentCache[i] = mostFrequentCache[i-1];
         mostFrequentCache[0] = item;
     }
 
-    public String[] getFixedCache() {
-        return Arrays.stream(mostFrequentCache).filter(Objects::nonNull)
-                .map(LibraryItem::getTitle).toArray(String[]::new);
-    }
 
     public LibraryItem findItemById(String id) {
         return inventory.stream().filter(i -> i.getId().equals(id)).findFirst().orElse(null);
@@ -155,13 +171,9 @@ public class LibraryManager {
     public List<LibraryItem> getInventory() { return inventory; }
     public List<User> getUsers() { return users; }
     public String getUndoStackSize() { return String.valueOf(undoStack.size()); }
-    public String[] getReservationList() { return new String[]{"No active reservations"}; }
-    public void saveData() { /* Implementation for File IO */ }
-    public void loadFromFile(String path) { /* Implementation for File IO */ }
-    public String generateReport() { return "Total Items: " + inventory.size() + "\nTotal Users: " + users.size(); }
 
     public int recursiveSearch(String query, int i) {
-        // TODO Auto-generated method stub
+   
         throw new UnsupportedOperationException("Unimplemented method 'recursiveSearch'");
     }
 }

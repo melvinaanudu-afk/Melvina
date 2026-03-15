@@ -4,24 +4,20 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Requirement 10: Part of the User Management System.
- * Stores information about library members and their borrowed items.
- */
 public class User implements Serializable {
     private String userId;
     private String name;
     private String email;
-    private String role; // e.g., Student, Faculty, Admin
+    private String role; 
     private List<String> borrowedItemIds; // List to track items currently held
 
-    public User(String userId, String name, String email) {
-        this.userId = userId;
-        this.name = name;
-        this.email = email;
-        this.role = "Student"; // Default role
-        this.borrowedItemIds = new ArrayList<>();
-    }
+    public User(String userId, String name, String email, String role) {
+    this.userId = userId;
+    this.name = name;
+    this.email = email;
+    this.role = role; // No longer hardcoded
+    this.borrowedItemIds = new ArrayList<>();
+}
 
     // --- Business Logic ---
 

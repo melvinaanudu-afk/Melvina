@@ -10,7 +10,7 @@ public class FileHandler {
     public static void saveData(List<LibraryItem> items) {
         try (PrintWriter out = new PrintWriter(new FileWriter(DATA_FILE))) {
             for (LibraryItem item : items) {
-                // Format: Type|ID|Title|Author|Year|Category|Status|BorrowedBy
+       
                 out.println(item.getType() + "|" + item.getId() + "|" + item.getTitle() + "|" +
                             item.getAuthor() + "|" + item.getYear() + "|" + item.getCategory() + "|" +
                             item.getStatus() + "|" + item.getBorrowedBy());

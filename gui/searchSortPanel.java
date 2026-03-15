@@ -14,7 +14,6 @@ public class searchSortPanel extends JPanel {
     private JTextField searchField;
     private JLabel statusLabel;
     
-    // Tracks the current sorting state (Requirement 4)
     private boolean isSortedByTitle = false;
 
     public searchSortPanel(LibraryManager manager) {
@@ -27,21 +26,19 @@ public class searchSortPanel extends JPanel {
     }
 
     private void initComponents() {
-        // --- Top Control Panel ---
+
         JPanel controls = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
 
-        // Sorting Dropdown (Requirement 5)
         algoBox = new JComboBox<>(new String[]{"Merge Sort (Title)", "Selection Sort (Year)"});
         JButton sortBtn = new JButton("Apply Sort");
-        
-        // Search Section (Requirement 4)
+      
         searchField = new JTextField(15);
         JButton searchBtn = new JButton("Search Title");
         statusLabel = new JLabel("Status: Unsorted");
 
-        // Layout controls
+
         gbc.gridx = 0; gbc.gridy = 0; controls.add(new JLabel("Algorithm:"), gbc);
         gbc.gridx = 1; controls.add(algoBox, gbc);
         gbc.gridx = 2; controls.add(sortBtn, gbc);
@@ -52,7 +49,7 @@ public class searchSortPanel extends JPanel {
 
         add(controls, BorderLayout.NORTH);
 
-        // --- Table Display ---
+
         String[] columns = {"ID", "Type", "Title", "Author", "Year", "Status"};
         model = new DefaultTableModel(columns, 0) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
@@ -60,9 +57,7 @@ public class searchSortPanel extends JPanel {
         table = new JTable(model);
         add(new JScrollPane(table), BorderLayout.CENTER);
 
-        // --- Event Listeners ---
-        
-        // Sorting Logic
+      
         sortBtn.addActionListener(e -> {
             String selection = (String) algoBox.getSelectedItem();
             if ("Merge Sort (Title)".equals(selection)) {
@@ -70,7 +65,7 @@ public class searchSortPanel extends JPanel {
                 isSortedByTitle = true;
                 statusLabel.setText("Status: Sorted by Title");
             } else {
-                // Assuming you implement Selection Sort in SearchEngine
+              
                 SearchEngine.selectionSortByYear(manager.getInventory());
                 isSortedByTitle = false;
                 statusLabel.setText("Status: Sorted by Year");
@@ -78,17 +73,16 @@ public class searchSortPanel extends JPanel {
             refreshTable();
         });
 
-        // Search Logic (Requirement 4: Appropriate search based on sorting state)
         searchBtn.addActionListener(e -> {
             String query = searchField.getText().trim();
             if (query.isEmpty()) return;
 
             if (isSortedByTitle) {
-                // Binary Search (Fastest for sorted lists)
+         
                 int index = SearchEngine.binarySearchByTitle(manager.getInventory(), query);
                 highlightResult(index);
             } else {
-                // Recursive Search (Requirement 6.1)
+         
                 int index = manager.recursiveSearch(query, 0);
                 highlightResult(index);
             }

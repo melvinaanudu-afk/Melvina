@@ -41,7 +41,7 @@ public class MainWindow extends JFrame {
         tabs.addTab("Circulation", createBorrowTab());
         tabs.addTab("Admin", createAdminTab());
         tabs.addTab("Search", createSearchSortTab());
-        tabs.addTab("Reports", createReportsTab());
+        tabs.addTab("Reports", createReportsTab1());
         add(tabs, BorderLayout.CENTER);
 
         // Status Bar
@@ -78,14 +78,37 @@ public class MainWindow extends JFrame {
         return p;
     }
 
+    // ... inside MainWindow class ...
+
     private JPanel createBorrowTab() {
-        JPanel p = new JPanel(new FlowLayout());
-        JTextField iid = new JTextField(10), uid = new JTextField(10);
-        JButton bBtn = new JButton("Borrow");
-        bBtn.addActionListener(e -> { manager.borrowItem(iid.getText(), uid.getText()); refreshAllData(); });
-        p.add(new JLabel("Item ID:")); p.add(iid);
-        p.add(new JLabel("User ID:")); p.add(uid);
-        p.add(bBtn);
+        // Reuse your BorrowPanel which already contains the Return button logic
+        BorrowController controller = new BorrowController(manager);
+        
+        // We pass 'this::refreshAllData' so the tables update immediately
+        BorrowPanel panel = new BorrowPanel(controller, this::refreshAllData);
+        
+        JPanel centerWrapper = new JPanel(new GridBagLayout());
+        centerWrapper.add(panel);
+        return centerWrapper;
+    }
+
+    private JPanel createReportsTab1() {
+        JPanel p = new JPanel(new BorderLayout());
+        p.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        reportArea = new JTextArea();
+        reportArea.setEditable(false);
+        reportArea.setFont(new Font("Monospaced", Font.PLAIN, 13));
+        reportArea.setBackground(new Color(245, 245, 245));
+
+        JButton genBtn = new JButton("Generate System Report");
+        genBtn.addActionListener(e -> {
+            reportArea.setText(manager.generateReport());
+        });
+
+        p.add(new JLabel("Library Transaction Logs:"), BorderLayout.NORTH);
+        p.add(new JScrollPane(reportArea), BorderLayout.CENTER);
+        p.add(genBtn, BorderLayout.SOUTH);
         return p;
     }
 
@@ -93,9 +116,10 @@ public class MainWindow extends JFrame {
         JPanel p = new JPanel(new BorderLayout());
         JPanel form = new JPanel();
         JTextField nf = new JTextField(10), ef = new JTextField(10);
+        JComboBox<String> roleBox = new JComboBox<>(new String[]{"Member", "Faculty", "Admin"});
         JButton addBtn = new JButton("Add User");
-        addBtn.addActionListener(e -> { manager.addUser(nf.getText(), ef.getText()); refreshAllData(); });
-        form.add(new JLabel("Name:")); form.add(nf); form.add(ef); form.add(addBtn);
+        addBtn.addActionListener(e -> { manager.addUser(nf.getText(), ef.getText(), (String)roleBox.getSelectedItem()); refreshAllData(); });
+        form.add(new JLabel("Name:")); form.add(nf); form.add(ef); form.add(roleBox); form.add(addBtn);
         userTableModel = new DefaultTableModel(new String[]{"UID", "Name", "Email", "Role"}, 0);
         p.add(form, BorderLayout.NORTH);
         p.add(new JScrollPane(new JTable(userTableModel)), BorderLayout.CENTER);
@@ -121,16 +145,6 @@ public class MainWindow extends JFrame {
         return p;
     }
 
-    private JPanel createReportsTab() {
-        JPanel p = new JPanel(new BorderLayout());
-        reportArea = new JTextArea();
-        JButton b = new JButton("Generate");
-        b.addActionListener(e -> reportArea.setText(manager.generateReport()));
-        p.add(new JScrollPane(reportArea), BorderLayout.CENTER);
-        p.add(b, BorderLayout.SOUTH);
-        return p;
-    }
-
     private void refreshAllData() {
         if (itemTableModel != null) {
             itemTableModel.setRowCount(0);
@@ -147,4 +161,5 @@ public class MainWindow extends JFrame {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new MainWindow().setVisible(true));
     }
+    
 }
