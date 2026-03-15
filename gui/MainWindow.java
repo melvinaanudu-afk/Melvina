@@ -116,7 +116,7 @@ public class MainWindow extends JFrame {
         JPanel p = new JPanel(new BorderLayout());
         JPanel form = new JPanel();
         JTextField nf = new JTextField(10), ef = new JTextField(10);
-        JComboBox<String> roleBox = new JComboBox<>(new String[]{"Member", "Faculty", "Admin"});
+        JComboBox<String> roleBox = new JComboBox<>(new String[]{"Student", "Faculty", "Admin"});
         JButton addBtn = new JButton("Add User");
         addBtn.addActionListener(e -> { manager.addUser(nf.getText(), ef.getText(), (String)roleBox.getSelectedItem()); refreshAllData(); });
         form.add(new JLabel("Name:")); form.add(nf); form.add(ef); form.add(roleBox); form.add(addBtn);

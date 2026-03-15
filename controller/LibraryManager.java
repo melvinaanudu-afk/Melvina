@@ -75,7 +75,7 @@ public class LibraryManager {
     }
 public void addUser(String name, String email, String role) {
     String id = "U" + (users.size() + 101);
-    users.add(new User(id, name, email, role)); // Passing role here
+    users.add(new User(id, name, email, role)); 
     undoStack.push("ADD_USER:" + id);
 }
     private int partition(List<LibraryItem> items, int low, int high, String criteria) {
@@ -175,5 +175,12 @@ public void addUser(String name, String email, String role) {
     public int recursiveSearch(String query, int i) {
    
         throw new UnsupportedOperationException("Unimplemented method 'recursiveSearch'");
+    }
+
+
+    public void addUser1(String name, String email, String role) {
+        String id = "U" + (users.size() + 101);
+        users.add(new User(id, name, email, role));
+        undoStack.push("ADD_USER:" + id);
     }
 }

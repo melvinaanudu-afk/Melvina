@@ -25,7 +25,7 @@ public class AdminPanel extends JPanel {
     }
 
     private void initComponents() {
-        // Form Fields
+  
         nameField = new JTextField(15);
         emailField = new JTextField(15);
         roleCombo = new JComboBox<>(new String[]{"Member", "Staff", "Admin"});
@@ -33,7 +33,7 @@ public class AdminPanel extends JPanel {
         addBtn.setBackground(new Color(0, 0, 0));
         addBtn.setForeground(Color.WHITE);
 
-        // Table Setup
+      
         String[] columns = {"User ID", "Full Name", "Email Address", "Access Level"};
         userTableModel = new DefaultTableModel(columns, 0) {
             @Override
@@ -42,7 +42,7 @@ public class AdminPanel extends JPanel {
     }
 
     private void layoutComponents() {
-        // --- Input Section ---
+   
         JPanel inputPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         inputPanel.setBorder(BorderFactory.createTitledBorder("Registration Console"));
         
@@ -56,7 +56,6 @@ public class AdminPanel extends JPanel {
 
         add(inputPanel, BorderLayout.NORTH);
 
-        // --- Table Section ---
         JTable userTable = new JTable(userTableModel);
         userTable.setRowHeight(25);
         userTable.getTableHeader().setReorderingAllowed(false);
@@ -77,7 +76,7 @@ public class AdminPanel extends JPanel {
             }
 
             // Logic: Manager generates the ID internally
-            manager.addUser(name, email); 
+            manager.addUser(name, email, email); 
             updateUserTable();
             
             // Clear fields
@@ -87,10 +86,6 @@ public class AdminPanel extends JPanel {
         });
     }
 
-    /**
-     * Synchronizes the table with the manager's current user list.
-     * This is called by MainWindow during a global refresh.
-     */
     public void updateUserTable() {
         userTableModel.setRowCount(0);
         for (User user : manager.getUsers()) {
